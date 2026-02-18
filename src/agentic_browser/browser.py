@@ -5,7 +5,7 @@ from collections import deque
 from typing import Iterable
 from urllib.parse import urlparse
 
-from playwright.async_api import Browser, Page, async_playwright
+from playwright.async_api import BrowserContext, Page, async_playwright
 
 from .cache import CrawlCache
 from .extractors import extract_clean_text, extract_links, score_link
@@ -21,11 +21,22 @@ class FastAgenticBrowser:
 
     async def crawl(self, seeds: Iterable[str]) -> CrawlResult:
         queue = deque((url, 0) for url in seeds)
+        queued: set[str] = set(seeds)
         visited: set[str] = set()
         result = CrawlResult()
 
         async with async_playwright() as p:
             browser = await p.chromium.launch(headless=True)
+            context = await browser.new_context()
+            if self.config.block_assets:
+                async def _route_handler(route):
+                    if route.request.resource_type in {"image", "font", "media", "stylesheet"}:
+                        await route.abort()
+                    else:
+                        await route.continue_()
+
+                await context.route("**/*", _route_handler)
+
             sem = asyncio.Semaphore(self.config.concurrency)
 
             async def worker(url: str, depth: int):
@@ -33,7 +44,7 @@ class FastAgenticBrowser:
                     if url in visited:
                         return []
                     visited.add(url)
-                    page_data, discovered = await self._process_url(browser, url, depth)
+                    page_data, discovered = await self._process_url(context, url, depth)
                     if page_data:
                         result.pages.append(page_data)
                     return discovered
@@ -52,19 +63,23 @@ class FastAgenticBrowser:
                 for future in asyncio.as_completed(batch):
                     discovered = await future
                     for next_url, next_depth in discovered:
-                        if next_url not in visited and next_depth <= self.config.max_depth:
-                            queue.append((next_url, next_depth))
+                        if next_depth > self.config.max_depth:
+                            continue
+                        if next_url in visited or next_url in queued:
+                            continue
+                        queued.add(next_url)
+                        queue.append((next_url, next_depth))
 
+            await context.close()
             await browser.close()
 
         return result
 
-    async def _process_url(self, browser: Browser, url: str, depth: int):
+    async def _process_url(self, context: BrowserContext, url: str, depth: int):
         cached = self.cache.get(url)
         if cached:
             return PageExtraction(**cached), []
 
-        context = await browser.new_context()
         page = await context.new_page()
 
         try:
@@ -114,7 +129,7 @@ class FastAgenticBrowser:
             )
             return failure, []
         finally:
-            await context.close()
+            await page.close()
 
     async def _click_promising_links(self, page: Page, links: list[str]) -> list[str]:
         candidates = sorted(

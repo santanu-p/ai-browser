@@ -20,3 +20,25 @@ def test_cache_put_get(tmp_path):
     assert got is not None
     assert got["title"] == "Example"
     assert got["metadata"]["a"] == 1
+
+
+def test_cache_query(tmp_path):
+    db = tmp_path / "cache.sqlite3"
+    cache = CrawlCache(str(db))
+    cache.put(
+        {
+            "url": "https://example.com/pricing",
+            "title": "Pricing",
+            "clean_text": "Fast plans",
+            "metadata": {},
+            "links": [],
+            "clicked_links": [],
+            "browser_storage": {},
+        }
+    )
+
+    rows = cache.query("pricing", limit=5)
+    cache.close()
+
+    assert len(rows) == 1
+    assert rows[0]["url"] == "https://example.com/pricing"

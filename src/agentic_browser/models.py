@@ -13,6 +13,7 @@ class CrawlConfig:
     wait_until: str = "domcontentloaded"
     follow_external_links: bool = False
     click_top_candidates: int = 5
+    block_assets: bool = True
 
 
 @dataclass(slots=True)

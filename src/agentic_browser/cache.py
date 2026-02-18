@@ -48,6 +48,31 @@ class CrawlCache:
             "browser_storage": json.loads(row[5]),
         }
 
+    def query(self, term: str, limit: int = 20) -> list[dict[str, Any]]:
+        like = f"%{term}%"
+        rows = self.conn.execute(
+            """
+            SELECT url, title, clean_text, metadata, links, clicked_links, browser_storage
+            FROM pages
+            WHERE url LIKE ? OR title LIKE ? OR clean_text LIKE ?
+            ORDER BY fetched_at DESC
+            LIMIT ?
+            """,
+            (like, like, like, limit),
+        ).fetchall()
+        return [
+            {
+                "url": row[0],
+                "title": row[1],
+                "clean_text": row[2],
+                "metadata": json.loads(row[3]),
+                "links": json.loads(row[4]),
+                "clicked_links": json.loads(row[5]),
+                "browser_storage": json.loads(row[6]),
+            }
+            for row in rows
+        ]
+
     def put(self, payload: dict[str, Any]) -> None:
         self.conn.execute(
             """
