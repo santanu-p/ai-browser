@@ -1,7 +1,5 @@
 # Agentic Browser (Fast)
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/santanu-p/ai-browser/blob/main/notebooks/agentic_browser_colab.ipynb)
-
 A highly optimized **AI-agentic browser crawler** designed to:
 
 - Crawl websites concurrently at high speed.
@@ -28,6 +26,8 @@ playwright install chromium
 ```
 
 ## Run in Google Colab
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/santanu-p/ai-browser/blob/main/notebooks/agentic_browser_colab.ipynb)
 
 Click the **Open in Colab** button above, then run all cells in the notebook.
 
