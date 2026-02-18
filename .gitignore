@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+.agentic_browser_cache.sqlite3
+crawl_output.json
