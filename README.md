@@ -1,5 +1,7 @@
 # Agentic Browser (Fast)
 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/santanu-p/ai-browser/blob/main/notebooks/agentic_browser_colab.ipynb)
+
 A highly optimized **AI-agentic browser crawler** designed to:
 
 - Crawl websites concurrently at high speed.
@@ -24,6 +26,19 @@ source .venv/bin/activate
 pip install -e .[dev]
 playwright install chromium
 ```
+
+## Run in Google Colab
+
+Click the **Open in Colab** button above, then run all cells in the notebook.
+
+The notebook will:
+
+1. Clone this repo into Colab.
+2. Install dependencies and Playwright Chromium.
+3. Run a sample crawl and save `out.json`.
+4. Run a sample cache query.
+
+> If this repository lives under a different GitHub account or branch, update the repo URL in the first notebook cell (and optionally this badge link) to your fork/path.
 
 ## Usage
 
