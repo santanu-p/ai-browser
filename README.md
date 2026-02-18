@@ -13,7 +13,8 @@ A highly optimized **AI-agentic browser crawler** designed to:
 - **Async concurrency** with configurable worker count.
 - **DOM-content-loaded strategy** (not full network-idle) for quick extraction.
 - **Heuristic link scoring** to click high-signal pages first.
-- **SQLite cache** to skip repeat fetches.
+- **SQLite cache** to skip repeat fetches and query already-crawled content instantly.
+- **Network resource blocking** (images/fonts/media/CSS) for significantly faster page turns.
 
 ## Install
 
@@ -34,6 +35,8 @@ Options:
 
 - `--follow-external`: include external domains.
 - `--cache-path`: path to SQLite cache database.
+- `--allow-assets`: disable speed optimization and allow heavy assets.
+- `--query "term"`: search the local crawl database quickly without re-crawling.
 
 ## Output
 
@@ -63,3 +66,12 @@ async def main():
 
 asyncio.run(main())
 ```
+
+
+## Query cached browser database
+
+```bash
+agentic-browser --cache-path .agentic_browser_cache.sqlite3 --query "pricing" --query-limit 10
+```
+
+This returns matched pages from SQLite (`url`, `title`, `clean_text`, links, metadata, browser storage).
