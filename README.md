@@ -1,1 +1,65 @@
+# Agentic Browser (Fast)
 
+A highly optimized **AI-agentic browser crawler** designed to:
+
+- Crawl websites concurrently at high speed.
+- Prioritize and click the most relevant links (docs, pricing, product, API, support, etc.).
+- Extract clean text and metadata from each page.
+- Fetch browser-side data (localStorage, sessionStorage, indexedDB names, cookies).
+- Cache crawl results in a SQLite "browser database" for fast repeated queries.
+
+## Why this is fast
+
+- **Async concurrency** with configurable worker count.
+- **DOM-content-loaded strategy** (not full network-idle) for quick extraction.
+- **Heuristic link scoring** to click high-signal pages first.
+- **SQLite cache** to skip repeat fetches.
+
+## Install
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -e .[dev]
+playwright install chromium
+```
+
+## Usage
+
+```bash
+agentic-browser https://example.com --max-pages 40 --max-depth 2 --concurrency 10 --out out.json
+```
+
+Options:
+
+- `--follow-external`: include external domains.
+- `--cache-path`: path to SQLite cache database.
+
+## Output
+
+`out.json` contains per-page:
+
+- `url`, `title`
+- `clean_text`
+- `metadata` (depth, host, text length, link count)
+- `links`
+- `clicked_links`
+- `browser_storage` (`localStorage`, `sessionStorage`, indexedDB DB names, cookies)
+
+## Example (Python API)
+
+```python
+import asyncio
+from agentic_browser.models import CrawlConfig
+from agentic_browser.browser import FastAgenticBrowser
+
+async def main():
+    crawler = FastAgenticBrowser(
+        CrawlConfig(max_pages=50, max_depth=2, concurrency=8)
+    )
+    result = await crawler.crawl(["https://example.com"])
+    crawler.close()
+    print(result.all_text[:500])
+
+asyncio.run(main())
+```
